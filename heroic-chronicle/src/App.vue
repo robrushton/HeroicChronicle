@@ -1,12 +1,33 @@
 <template>
-  <div>
-    <h1>Wildemount Heroic Chronicle</h1>
-    <v-btn x-large color="success" dark @click="generate">
-      Generate
-    </v-btn>
-    <br><br><br>
-    <pre id="chronicle">{{msg}}</pre>
-  </div>
+  <v-app>
+    <v-container>
+      <v-row justify="center">
+        <v-col>
+          <div class="display-2">Wildemount Heroic Chronicle</div>
+        </v-col>
+      </v-row>
+      <v-row justify="center">
+        <v-col>
+          <v-btn v-if="noCharGenerated" x-large color="success" elevation="8" @click="generate" transition="fade-transition">
+            Generate badass character
+          </v-btn>
+          <v-btn v-else x-large color="success" elevation="8" @click="generate" transition="fade-transition">
+            Generate...another...badass character
+          </v-btn>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col>
+          <v-progress-linear v-if="!noCharGenerated" color="red" height="10" indeterminate></v-progress-linear>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col>
+          <pre>{{msg}}</pre>
+        </v-col>
+      </v-row>
+    </v-container>
+  </v-app>
 </template>
 
 <script>
@@ -17,12 +38,17 @@ export default {
   data () {
     return {
       msg: '',
+      noCharGenerated: true,
     }
   },
   methods: {
     generate() {
+      this.noCharGenerated = false;
+      this.progress = 0;
       let chronicle = {};
       chronicle.Homeland = this.getHomeland();
+      // Set timeout is async, so i'd need to call each of the methods to generate data within a set timeout function
+      // If I want the progress bar to be incremental
       chronicle.Background = this.getBackground();
       chronicle.SocialStatus = this.getSocialStatus(chronicle.Homeland, chronicle.Background);
       chronicle.Settlement = this.getSettlement(chronicle.Homeland);
@@ -34,7 +60,6 @@ export default {
       chronicle.FavoriteFood = this.getFavoriteFood(chronicle.Homeland);
       chronicle.Secret = this.getSecret();
       chronicle.Prophecy = this.getProphecy();
-      console.log(chronicle);
       this.msg = JSON.stringify(chronicle, null, 2);
     },
     getRandomInt(max) {
