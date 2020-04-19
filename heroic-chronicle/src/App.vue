@@ -1,89 +1,97 @@
 <template>
   <v-app>
-    <v-container>
-      <v-row justify="center">
-        <v-col>
-          <div class="display-2">Wildemount Heroic Chronicle</div>
-        </v-col>
-      </v-row>
-      <v-row justify="center">
-        <v-col cols="12" lg="4">
-          <v-text-field v-model="newName" label="Character Name" outlined rounded clearable></v-text-field>
-        </v-col>
-      </v-row>
-      <v-row justify="center">
-        <v-col cols="12" lg="6">
-          <v-btn v-if="noCharGenerated" x-large color="success" elevation="8" @click="generate" transition="fade-transition" :disabled="disabledButton">
-            Generate badass character
-          </v-btn>
-          <v-btn v-else x-large color="success" elevation="8" @click="generate" transition="fade-transition" :disabled="disabledButton">
-            Generate...another...badass character
-          </v-btn>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col>
-          <v-progress-linear v-if="!noCharGenerated" color="red" height="5" indeterminate></v-progress-linear>
-        </v-col>
-      </v-row>
-      <v-row v-if="chronicle.name" justify="center">
-        <v-col>
-          <div class="display-1">{{chronicle.name}}</div>
-        </v-col>
-      </v-row>
-      <v-row v-if="chronicle.name">
-        <v-col cols="4">
-          <v-card class="mb-3" hover outlined>
-            <v-card-title>Homeland</v-card-title>
-            <v-card-subtitle class="text-left">{{chronicle.Homeland}}</v-card-subtitle>
-          </v-card>
-          <v-card class="my-3" hover outlined>
-            <v-card-title>Settlement</v-card-title>
-            <v-card-subtitle class="text-left">{{chronicle.Settlement}}</v-card-subtitle>
-          </v-card="8">
-          <v-card class="my-3" hover outlined>
-            <v-card-title>Favorite Food</v-card-title>
-            <v-card-subtitle class="text-left">{{chronicle.FavoriteFood}}</v-card-subtitle>
-          </v-card>
-          <v-card class="my-3" hover outlined>
-            <v-card-title>Background</v-card-title>
-            <v-card-subtitle class="text-left">{{chronicle.Background}}</v-card-subtitle>
-          </v-card>
-          <v-card class="mt-3" hover outlined>
-            <v-card-title>Family</v-card-title>
-            <v-card-subtitle class="text-left">{{chronicle.Family}}</v-card-subtitle>
-          </v-card>
-        </v-col>
-        <v-col cols="4" align-self="stretch">
-          <v-card class="match-height" hover outlined>
-            <v-card-title>Allies</v-card-title>
-            <v-card-subtitle class="text-left">{{chronicle.BackgroundAllyRivalInfo}}</v-card-subtitle>
-          </v-card>
-        </v-col>
-        <v-col cols="4">
-          <v-card class="match-height" hover outlined>
-            <v-card-title>Rivals</v-card-title>
-            <v-card-subtitle class="text-left">{{chronicle.FamilyAllyRivalInfo}}</v-card-subtitle>
-          </v-card>
-        </v-col>
-      </v-row>
-      <v-row v-if="chronicle.name">
-        <v-col cols="12">
-          <v-card class="mb-3" hover outlined>
-            <v-card-title>Fateful Moments</v-card-title>
-            <v-card-subtitle class="text-left">{{chronicle.FatefulMoments}}</v-card-subtitle>
-          </v-card>
-          <v-card class="mb-3" hover outlined>
-            <v-card-title>Mysterious Secret</v-card-title>
-            <v-card-subtitle class="text-left">{{chronicle.Secret}}</v-card-subtitle>
-          </v-card>
-          <v-card class="mb-3" hover outlined>
-            <v-card-title>Prophecy</v-card-title>
-            <v-card-subtitle class="text-left">{{chronicle.Prophecy}}</v-card-subtitle>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-container>
+    <v-app-bar
+      absolute
+      dark
+      shrink-on-scroll
+      prominent
+      src="https://media.dnd.wizards.com/styles/story_banner/public/images/head-banner/kJaPUuWzE0.jpg"
+    >
+      <v-toolbar-title>Wildemount Heroic Chronicle</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-btn icon>
+        <v-icon>mdi-invert-colors</v-icon>
+      </v-btn>
+    </v-app-bar>
+    <v-content style="padding-top:150px">
+      <v-container>
+        <v-row justify="center">
+          <v-col cols="6" lg="4">
+            <v-text-field v-model="newName" label="Character Name" outlined rounded clearable></v-text-field>
+          </v-col>
+          <v-col cols="6" lg="6">
+            <v-btn v-if="noCharGenerated" x-large color="success" elevation="8" @click="generate" transition="fade-transition" :disabled="disabledButton">
+              Generate badass character
+            </v-btn>
+            <v-btn v-else x-large color="success" elevation="8" @click="generate" transition="fade-transition" :disabled="disabledButton">
+              Generate...another...badass character
+            </v-btn>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <v-progress-linear v-if="!noCharGenerated" color="red" height="5" indeterminate></v-progress-linear>
+          </v-col>
+        </v-row>
+        <v-row v-if="chronicle.name" justify="center">
+          <v-col>
+            <div class="display-1">{{chronicle.name}}</div>
+          </v-col>
+        </v-row>
+        <v-row v-if="chronicle.name">
+          <v-col cols="4">
+            <v-card class="mb-3" hover outlined>
+              <v-card-title>Homeland</v-card-title>
+              <v-card-subtitle class="text-left">{{chronicle.Homeland}}</v-card-subtitle>
+            </v-card>
+            <v-card class="my-3" hover outlined>
+              <v-card-title>Settlement</v-card-title>
+              <v-card-subtitle class="text-left">{{chronicle.Settlement}}</v-card-subtitle>
+            </v-card="8">
+            <v-card class="my-3" hover outlined>
+              <v-card-title>Favorite Food</v-card-title>
+              <v-card-subtitle class="text-left">{{chronicle.FavoriteFood}}</v-card-subtitle>
+            </v-card>
+            <v-card class="my-3" hover outlined>
+              <v-card-title>Background</v-card-title>
+              <v-card-subtitle class="text-left">{{chronicle.Background}}</v-card-subtitle>
+            </v-card>
+            <v-card class="mt-3" hover outlined>
+              <v-card-title>Family</v-card-title>
+              <v-card-subtitle class="text-left">{{chronicle.Family}}</v-card-subtitle>
+            </v-card>
+          </v-col>
+          <v-col cols="4" align-self="stretch">
+            <v-card class="match-height" hover outlined>
+              <v-card-title>Allies</v-card-title>
+              <v-card-subtitle class="text-left">{{chronicle.BackgroundAllyRivalInfo}}</v-card-subtitle>
+            </v-card>
+          </v-col>
+          <v-col cols="4">
+            <v-card class="match-height" hover outlined>
+              <v-card-title>Rivals</v-card-title>
+              <v-card-subtitle class="text-left">{{chronicle.FamilyAllyRivalInfo}}</v-card-subtitle>
+            </v-card>
+          </v-col>
+        </v-row>
+        <v-row v-if="chronicle.name">
+          <v-col cols="12">
+            <v-card class="mb-3" hover outlined>
+              <v-card-title>Fateful Moments</v-card-title>
+              <v-card-subtitle class="text-left">{{chronicle.FatefulMoments}}</v-card-subtitle>
+            </v-card>
+            <v-card class="mb-3" hover outlined>
+              <v-card-title>Mysterious Secret</v-card-title>
+              <v-card-subtitle class="text-left">{{chronicle.Secret}}</v-card-subtitle>
+            </v-card>
+            <v-card class="mb-3" hover outlined>
+              <v-card-title>Prophecy</v-card-title>
+              <v-card-subtitle class="text-left">{{chronicle.Prophecy}}</v-card-subtitle>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-content>
   </v-app>
 </template>
 
@@ -1314,7 +1322,6 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 
 .match-height {
