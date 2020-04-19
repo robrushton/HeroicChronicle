@@ -28,11 +28,11 @@
             </v-btn>
           </v-col>
         </v-row>
-        <v-row>
+        <!-- <v-row>
           <v-col>
             <v-progress-linear v-if="!noCharGenerated" color="red" height="5" indeterminate></v-progress-linear>
           </v-col>
-        </v-row>
+        </v-row> -->
         <v-row v-if="chronicle.name" justify="center">
           <v-col>
             <div class="display-1">{{chronicle.name}}</div>
@@ -46,7 +46,7 @@
             </v-card>
             <v-card class="my-3" hover outlined>
               <v-card-title>Settlement</v-card-title>
-              <v-card-subtitle class="text-left">{{chronicle.Settlement}}</v-card-subtitle>
+              <v-card-subtitle class="text-left">{{chronicle.Settlement.Name}}</v-card-subtitle>
             </v-card="8">
             <v-card class="my-3" hover outlined>
               <v-card-title>Favorite Food</v-card-title>
@@ -58,27 +58,53 @@
             </v-card>
             <v-card class="mt-3" hover outlined>
               <v-card-title>Family</v-card-title>
-              <v-card-subtitle class="text-left">{{chronicle.Family}}</v-card-subtitle>
+              <v-card-subtitle class="text-left">
+                <div v-if="chronicle.Family.Parents > 2">{{chronicle.Family.Parents}}+ Parent(s)</div>
+                <div v-else>{{chronicle.Family.Parents}} Parent(s)</div>
+                <div>{{chronicle.Family.Siblings}} Sibling(s)</div>
+                <div>{{chronicle.Family.Powerful}} Powerful Family Member(s)</div>
+              </v-card-subtitle>
             </v-card>
           </v-col>
           <v-col cols="4" align-self="stretch">
             <v-card class="match-height" hover outlined>
               <v-card-title>Allies</v-card-title>
-              <v-card-subtitle class="text-left">{{chronicle.BackgroundAllyRivalInfo}}</v-card-subtitle>
+              <div v-if="chronicle.AlliesRivals.allies.length > 0">
+                <v-card-subtitle v-for="(person, index) in chronicle.AlliesRivals.allies" :key="index" class="text-left pt-0">
+                  <div class="font-weight-bold">{{person.Name}}</div>
+                  <div>{{person.relationship}}</div>
+                </v-card-subtitle>
+              </div>
+              <div v-else>
+                <v-card-subtitle class="text-left pt-0">Nope, no one likes you. Sorry bro</v-card-subtitle>
+              </div>
             </v-card>
           </v-col>
           <v-col cols="4">
             <v-card class="match-height" hover outlined>
               <v-card-title>Rivals</v-card-title>
-              <v-card-subtitle class="text-left">{{chronicle.FamilyAllyRivalInfo}}</v-card-subtitle>
+              <div v-if="chronicle.AlliesRivals.rivals.length > 0">
+                <v-card-subtitle v-for="(person, index) in chronicle.AlliesRivals.rivals" :key="index" class="text-left pt-0">
+                  <div class="font-weight-bold">{{person.Name}}</div>
+                  <div>{{person.relationship}}</div>
+                </v-card-subtitle>
+              </div>
+              <div v-else>
+                <v-card-subtitle class="text-left pt-0">Yay! No one hates you!</v-card-subtitle>
+              </div>
             </v-card>
           </v-col>
         </v-row>
         <v-row v-if="chronicle.name">
           <v-col cols="12">
             <v-card class="mb-3" hover outlined>
-              <v-card-title>Fateful Moments</v-card-title>
-              <v-card-subtitle class="text-left">{{chronicle.FatefulMoments}}</v-card-subtitle>
+              <v-card-title class="pb-0">Fateful Moments</v-card-title>
+              <div v-if="chronicle.FatefulMoments.length > 0">
+                <v-card-subtitle v-for="moment in chronicle.FatefulMoments" :key="moment" class="text-left pt-0">{{moment}}</v-card-subtitle>
+              </div>
+              <div v-else>
+                <v-card-subtitle class="text-left pt-0">Sadly, Fate has not revealed itself to you. Yet.</v-card-subtitle>
+              </div>
             </v-card>
             <v-card class="mb-3" hover outlined>
               <v-card-title>Mysterious Secret</v-card-title>
@@ -138,10 +164,12 @@ export default {
       this.chronicle.SocialStatus = this.getSocialStatus(this.chronicle.Homeland, this.chronicle.Background);
       this.chronicle.Settlement = this.getSettlement(this.chronicle.Homeland);
       this.chronicle.Family = this.getFamily(this.chronicle.Settlement);
-      this.chronicle.FamilyRelationships = this.getFamilyRelationships(this.chronicle.Family);
-      this.chronicle.BackgroundAllyRivalInfo = this.getBackgroundAllyRivalInfo(this.chronicle.SocialStatus);
-      this.chronicle.FamilyAllyRivalInfo = this.getFamilyAllyRivalInfo(this.chronicle.FamilyRelationships);
-      this.chronicle.FatefulMoments = this.getFatefulMoments(this.chronicle.BackgroundAllyRivalInfo, this.chronicle.FamilyAllyRivalInfo);
+      // Find all allies/rivals, then aggregate them into one object on the chronicle
+      let FamilyRelationships = this.getFamilyRelationships(this.chronicle.Family);
+      let BackgroundAllyRivalInfo = this.getBackgroundAllyRivalInfo(this.chronicle.SocialStatus);
+      this.chronicle.AlliesRivals = this.calculateAlliesRivals(FamilyRelationships, BackgroundAllyRivalInfo);
+      // this.chronicle.FamilyAllyRivalInfo = this.getFamilyAllyRivalInfo(this.chronicle.FamilyRelationships);
+      this.chronicle.FatefulMoments = this.getFatefulMoments(BackgroundAllyRivalInfo, FamilyRelationships);
       this.chronicle.FavoriteFood = this.getFavoriteFood(this.chronicle.Homeland);
       this.chronicle.Secret = this.getSecret();
       this.chronicle.Prophecy = this.getProphecy();
@@ -873,7 +901,6 @@ export default {
       let result = this.getRandomInt(100);
 
       let family = {};
-      family.Powerful = this.getRandomInt(3);
 
       if (settlement.Type == "City") {
         if (result <= 5) {
@@ -905,12 +932,14 @@ export default {
         }
       }
 
+      let powerful = this.getRandomInt(3);
+      let possiblePowerful = family.Parents + family.Siblings;
+      family.Powerful = powerful > possiblePowerful ? possiblePowerful : powerful;
+
       return family;
     },
     getFamilyRelationships(family) {
       let relationships = [];
-      let familyAllies = 0;
-      let familyRivals = 0;
       let loopVar = family.Powerful;
 
       if (family.Parents + family.Siblings > 0) {
@@ -920,57 +949,44 @@ export default {
 
         for (let i = 0; i < loopVar; i++) {
           const result = this.getRandomInt(100);
-          let relationship = "";
+          let newIdentity = this.getAllyRivalIdentity();
 
           if (result <= 10) {
-            relationship = "You thought you killed this family member, whether by accident or otherwise. You never expected to see them again—but now they’re out for your blood. You gain one rival.";
-            familyRivals++;
-            relationships.push(relationship);
+            newIdentity.relationship = "You thought you killed this family member, whether by accident or otherwise. You never expected to see them again—but now they’re out for your blood. You gain one rival.";
+            newIdentity.type = "rival";
           } else if (result <= 20) {
-            relationship = "You insulted this family member so gravely that they left your life forever. If they ever return, it will be to settle the score. You gain one rival.";
-            familyRivals++;
-            relationships.push(relationship);
+            newIdentity.relationship = "You insulted this family member so gravely that they left your life forever. If they ever return, it will be to settle the score. You gain one rival.";
+            newIdentity.type = "rival";
           } else if (result <= 30) {
-            relationship = "You have always been better than this family member at a particular activity. They grew jealous and abandoned you, so that they could return and best you one day. You gain one rival.";
-            familyRivals++;
-            relationships.push(relationship);
+            newIdentity.relationship = "You have always been better than this family member at a particular activity. They grew jealous and abandoned you, so that they could return and best you one day. You gain one rival.";
+            newIdentity.type = "rival";
           } else if (result <= 40) {
-            relationship = "You uncovered a secret about this family member, whether a tiny embarrassment or a life-changing scandal. They now seek to unveil your darkest secret. You gain one rival.";
-            familyRivals++;
-            relationships.push(relationship);
+            newIdentity.relationship = "You uncovered a secret about this family member, whether a tiny embarrassment or a life-changing scandal. They now seek to unveil your darkest secret. You gain one rival.";
+            newIdentity.type = "rival";
           } else if (result <= 50) {
-            relationship = "You and this family member have a friendly rivalry, and are constantly trying to best each other in an activity, craft, or other pursuit. You visit occasionally to test each other’s skills. You gain one rival.";
-            familyRivals++;
-            relationships.push(relationship);
+            newIdentity.relationship = "You and this family member have a friendly rivalry, and are constantly trying to best each other in an activity, craft, or other pursuit. You visit occasionally to test each other’s skills. You gain one rival.";
+            newIdentity.type = "rival";
           } else if (result <= 60) {
-            relationship = "This family member owes you a debt, and they don’t like it. They’ll help you out when you need it, but only to clear the slate. You gain one ally.";
-            familyAllies++;
-            relationships.push(relationship);
+            newIdentity.relationship = "This family member owes you a debt, and they don’t like it. They’ll help you out when you need it, but only to clear the slate. You gain one ally.";
+            newIdentity.type = "ally";
           } else if (result <= 70) {
-            relationship = "This family member loves you, but you were never that close. They’ll do anything to help you—as long as they won’t be at risk of injury or death. You gain one ally.";
-            familyAllies++;
-            relationships.push(relationship);
+            newIdentity.relationship = "This family member loves you, but you were never that close. They’ll do anything to help you—as long as they won’t be at risk of injury or death. You gain one ally.";
+            newIdentity.type = "ally";
           } else if (result <= 80) {
-            relationship = "This family member caused you to have a horrible accident when you were a child. They still feel incredible guilt, which they would do anything to assuage. You gain one ally.";
-            familyAllies++;
-            relationships.push(relationship);
+            newIdentity.relationship = "This family member caused you to have a horrible accident when you were a child. They still feel incredible guilt, which they would do anything to assuage. You gain one ally.";
+            newIdentity.type = "ally";
           } else if (result <= 90) {
-            relationship = "This family member left long ago for reasons you don’t understand or won’t talk about. Before they left, they promised you that they would return in your hour of greatest need. You gain one ally.";
-            familyAllies++;
-            relationships.push(relationship);
+            newIdentity.relationship = "This family member left long ago for reasons you don’t understand or won’t talk about. Before they left, they promised you that they would return in your hour of greatest need. You gain one ally.";
+            newIdentity.type = "ally";
           } else {
-            relationship = "This family member has always loved you with all their heart, and would do anything for you. You gain one ally.";
-            familyAllies++;
-            relationships.push(relationship);
+            newIdentity.relationship = "This family member has always loved you with all their heart, and would do anything for you. You gain one ally.";
+            newIdentity.type = "ally";
           }
+          relationships.push(newIdentity);
         }
       }
 
-      return {
-        "Allies": familyAllies,
-        "Rivals": familyRivals,
-        "Relationships": relationships
-      }
+      return relationships;
     },
     getAllyRivalIdentity() {
       const result = this.getRandomInt(100);
@@ -1081,8 +1097,10 @@ export default {
         const relationship = this.getAllyRelationship();
         return [
           {
-            "Identity": identity,
-            "Relationship": relationship
+            "Name": identity.Name,
+            "FateFulMoment": identity.FatefulMoment,
+            "relationship": relationship,
+            "type": "ally",
           }
         ]
       } else if (socialStatus.Rival) {
@@ -1090,8 +1108,10 @@ export default {
         const relationship = this.getRivalRelationship();
         return [
           {
-            "Identity": identity,
-            "Relationship": relationship
+            "Name": identity.Name,
+            "FatefulMoment": identity.FatefulMoment,
+            "relationship": relationship,
+            "type": "rival"
           }
         ]
       } else if (socialStatus.And) {
@@ -1101,12 +1121,16 @@ export default {
         const rivalRelationship = this.getRivalRelationship();
         return [
           {
-            "Identity": allyIdentity,
-            "Relationship": allyRelationship
+            "Name": allyIdentity.Name,
+            "FateFulMoment": allyIdentity.FatefulMoment,
+            "relationship": allyRelationship,
+            "type": "ally",
           },
           {
-            "Identity": rivalIdentity,
-            "Relationship": rivalRelationship
+            "Name": rivalIdentity.Name,
+            "FatefulMoment": rivalIdentity.FatefulMoment,
+            "relationship": rivalRelationship,
+            "type": "rival"
           }
         ]
       } else {
@@ -1116,36 +1140,62 @@ export default {
         const rivalRelationship = this.getRivalRelationship();
         return [
           {
-            "Identity": allyIdentity,
-            "Relationship": allyRelationship
+            "Name": allyIdentity.Name,
+            "FateFulMoment": allyIdentity.FatefulMoment,
+            "relationship": allyRelationship,
+            "type": "ally",
           },
           {
-            "Identity": rivalIdentity,
-            "Relationship": rivalRelationship
+            "Name": rivalIdentity.Name,
+            "FatefulMoment": rivalIdentity.FatefulMoment,
+            "relationship": rivalRelationship,
+            "type": "rival"
           }
         ]
       }
     },
-    getFamilyAllyRivalInfo(familyRelationships) {
-      const famAllies = familyRelationships.Allies;
-      const famRivals = familyRelationships.Rivals;
+    calculateAlliesRivals(famInfo, bgInfo) {
+      let alliesRivals = {
+        "allies": [],
+        "rivals": []
+      };
+      famInfo.forEach((element) => {
+        if (element.type === "ally") {
+          alliesRivals.allies.push(element);
+        } else {
+          alliesRivals.rivals.push(element);
+        }
+      });
+      bgInfo.forEach((element) => {
+        if (element.type === "ally") {
+          alliesRivals.allies.push(element);
+        } else {
+          alliesRivals.rivals.push(element);
+        }
+      });
 
-      let allies = [];
-      let rivals = [];
-
-      for (let i = 0; i < famAllies; i++) {
-        allies.push(this.getAllyRivalIdentity());
-      }
-
-      for (let i = 0; i < famRivals; i++) {
-        rivals.push(this.getAllyRivalIdentity());
-      }
-
-      return {
-        "FamilyAllyIdentities": allies,
-        "FamilyRivalIdentities": rivals
-      }
+      return alliesRivals;
     },
+    // getFamilyAllyRivalInfo(familyRelationships) {
+    //   const famAllies = familyRelationships.Allies;
+    //   const famRivals = familyRelationships.Rivals;
+
+    //   let allies = [];
+    //   let rivals = [];
+
+    //   for (let i = 0; i < famAllies; i++) {
+    //     allies.push(this.getAllyRivalIdentity());
+    //   }
+
+    //   for (let i = 0; i < famRivals; i++) {
+    //     rivals.push(this.getAllyRivalIdentity());
+    //   }
+
+    //   return {
+    //     "FamilyAllyIdentities": allies,
+    //     "FamilyRivalIdentities": rivals
+    //   }
+    // },
     getFatefulMoments(bgInfo, famInfo) {
       const moments = [
         "Your parents were murdered in front of you. Roll on the Ally and Rival Identities table to determine the type of creature that killed them. You have proficiency in the Stealth and Survival skills.",
@@ -1174,19 +1224,13 @@ export default {
       let rolledMoments = [];
 
       for (let i = 0; i < bgInfo.length; i++) {
-        if (bgInfo[i].Identity.FatefulMoment) {
+        if (bgInfo[i].FatefulMoment) {
           totalFatefulMoments++;
         }
       }
 
-      for (let i = 0; i < famInfo.FamilyAllyIdentities.length; i++) {
-        if (famInfo.FamilyAllyIdentities[i].FatefulMoment) {
-          totalFatefulMoments++;
-        }
-      }
-
-      for (let i = 0; i < famInfo.FamilyRivalIdentities.length; i++) {
-        if (famInfo.FamilyRivalIdentities[i].FatefulMoment) {
+      for (let i = 0; i < famInfo.length; i++) {
+        if (famInfo[i].FatefulMoment) {
           totalFatefulMoments++;
         }
       }
