@@ -7,23 +7,80 @@
         </v-col>
       </v-row>
       <v-row justify="center">
-        <v-col>
-          <v-btn v-if="noCharGenerated" x-large color="success" elevation="8" @click="generate" transition="fade-transition">
+        <v-col cols="12" lg="4">
+          <v-text-field v-model="newName" label="Character Name" outlined rounded clearable></v-text-field>
+        </v-col>
+      </v-row>
+      <v-row justify="center">
+        <v-col cols="12" lg="6">
+          <v-btn v-if="noCharGenerated" x-large color="success" elevation="8" @click="generate" transition="fade-transition" :disabled="disabledButton">
             Generate badass character
           </v-btn>
-          <v-btn v-else x-large color="success" elevation="8" @click="generate" transition="fade-transition">
+          <v-btn v-else x-large color="success" elevation="8" @click="generate" transition="fade-transition" :disabled="disabledButton">
             Generate...another...badass character
           </v-btn>
         </v-col>
       </v-row>
       <v-row>
         <v-col>
-          <v-progress-linear v-if="!noCharGenerated" color="red" height="10" indeterminate></v-progress-linear>
+          <v-progress-linear v-if="!noCharGenerated" color="red" height="5" indeterminate></v-progress-linear>
         </v-col>
       </v-row>
-      <v-row>
+      <v-row v-if="chronicle.name" justify="center">
         <v-col>
-          <pre>{{msg}}</pre>
+          <div class="display-1">{{chronicle.name}}</div>
+        </v-col>
+      </v-row>
+      <v-row v-if="chronicle.name">
+        <v-col cols="4">
+          <v-card class="mb-3" hover outlined>
+            <v-card-title>Homeland</v-card-title>
+            <v-card-subtitle class="text-left">{{chronicle.Homeland}}</v-card-subtitle>
+          </v-card>
+          <v-card class="my-3" hover outlined>
+            <v-card-title>Settlement</v-card-title>
+            <v-card-subtitle class="text-left">{{chronicle.Settlement}}</v-card-subtitle>
+          </v-card="8">
+          <v-card class="my-3" hover outlined>
+            <v-card-title>Favorite Food</v-card-title>
+            <v-card-subtitle class="text-left">{{chronicle.FavoriteFood}}</v-card-subtitle>
+          </v-card>
+          <v-card class="my-3" hover outlined>
+            <v-card-title>Background</v-card-title>
+            <v-card-subtitle class="text-left">{{chronicle.Background}}</v-card-subtitle>
+          </v-card>
+          <v-card class="mt-3" hover outlined>
+            <v-card-title>Family</v-card-title>
+            <v-card-subtitle class="text-left">{{chronicle.Family}}</v-card-subtitle>
+          </v-card>
+        </v-col>
+        <v-col cols="4" align-self="stretch">
+          <v-card class="match-height" hover outlined>
+            <v-card-title>Allies</v-card-title>
+            <v-card-subtitle class="text-left">{{chronicle.BackgroundAllyRivalInfo}}</v-card-subtitle>
+          </v-card>
+        </v-col>
+        <v-col cols="4">
+          <v-card class="match-height" hover outlined>
+            <v-card-title>Rivals</v-card-title>
+            <v-card-subtitle class="text-left">{{chronicle.FamilyAllyRivalInfo}}</v-card-subtitle>
+          </v-card>
+        </v-col>
+      </v-row>
+      <v-row v-if="chronicle.name">
+        <v-col cols="12">
+          <v-card class="mb-3" hover outlined>
+            <v-card-title>Fateful Moments</v-card-title>
+            <v-card-subtitle class="text-left">{{chronicle.FatefulMoments}}</v-card-subtitle>
+          </v-card>
+          <v-card class="mb-3" hover outlined>
+            <v-card-title>Mysterious Secret</v-card-title>
+            <v-card-subtitle class="text-left">{{chronicle.Secret}}</v-card-subtitle>
+          </v-card>
+          <v-card class="mb-3" hover outlined>
+            <v-card-title>Prophecy</v-card-title>
+            <v-card-subtitle class="text-left">{{chronicle.Prophecy}}</v-card-subtitle>
+          </v-card>
         </v-col>
       </v-row>
     </v-container>
@@ -37,30 +94,49 @@ export default {
   name: 'app',
   data () {
     return {
-      msg: '',
       noCharGenerated: true,
+      newName: "",
+      chronicle: {
+        name: "",
+        Homeland: "",
+        Background: "",
+        SocialStatus: "",
+        Settlement: "",
+        Family: "",
+        FamilyRelationships: "",
+        BackgroundAllyRivalInfo: "",
+        FamilyAllyRivalInfo: "",
+        FatefulMoments: "",
+        FavoriteFood: "",
+        Secret: "",
+        Prophecy: "",
+      },
+    }
+  },
+  computed: {
+    disabledButton: function() {
+      return this.newName === null || this.newName === undefined || this.newName === '';
     }
   },
   methods: {
     generate() {
       this.noCharGenerated = false;
       this.progress = 0;
-      let chronicle = {};
-      chronicle.Homeland = this.getHomeland();
+      this.chronicle.name = this.newName;
+      this.chronicle.Homeland = this.getHomeland();
       // Set timeout is async, so i'd need to call each of the methods to generate data within a set timeout function
       // If I want the progress bar to be incremental
-      chronicle.Background = this.getBackground();
-      chronicle.SocialStatus = this.getSocialStatus(chronicle.Homeland, chronicle.Background);
-      chronicle.Settlement = this.getSettlement(chronicle.Homeland);
-      chronicle.Family = this.getFamily(chronicle.Settlement);
-      chronicle.FamilyRelationships = this.getFamilyRelationships(chronicle.Family);
-      chronicle.BackgroundAllyRivalInfo = this.getBackgroundAllyRivalInfo(chronicle.SocialStatus);
-      chronicle.FamilyAllyRivalInfo = this.getFamilyAllyRivalInfo(chronicle.FamilyRelationships);
-      chronicle.FatefulMoments = this.getFatefulMoments(chronicle.BackgroundAllyRivalInfo, chronicle.FamilyAllyRivalInfo);
-      chronicle.FavoriteFood = this.getFavoriteFood(chronicle.Homeland);
-      chronicle.Secret = this.getSecret();
-      chronicle.Prophecy = this.getProphecy();
-      this.msg = JSON.stringify(chronicle, null, 2);
+      this.chronicle.Background = this.getBackground();
+      this.chronicle.SocialStatus = this.getSocialStatus(this.chronicle.Homeland, this.chronicle.Background);
+      this.chronicle.Settlement = this.getSettlement(this.chronicle.Homeland);
+      this.chronicle.Family = this.getFamily(this.chronicle.Settlement);
+      this.chronicle.FamilyRelationships = this.getFamilyRelationships(this.chronicle.Family);
+      this.chronicle.BackgroundAllyRivalInfo = this.getBackgroundAllyRivalInfo(this.chronicle.SocialStatus);
+      this.chronicle.FamilyAllyRivalInfo = this.getFamilyAllyRivalInfo(this.chronicle.FamilyRelationships);
+      this.chronicle.FatefulMoments = this.getFatefulMoments(this.chronicle.BackgroundAllyRivalInfo, this.chronicle.FamilyAllyRivalInfo);
+      this.chronicle.FavoriteFood = this.getFavoriteFood(this.chronicle.Homeland);
+      this.chronicle.Secret = this.getSecret();
+      this.chronicle.Prophecy = this.getProphecy();
     },
     getRandomInt(max) {
       return Math.floor(Math.random() * max) + 1;
@@ -104,513 +180,513 @@ export default {
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": true
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Acolyte (Luxonborn)": {
           "Clovis Concord":{
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
           }
-        },  
+        },
         "Charlatan": {
           "Clovis Concord":{
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Criminal": {
           "Clovis Concord":{
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Criminal (Myriad Operative)": {
           "Clovis Concord":{
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Entertainer": {
           "Clovis Concord":{
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Folk Hero": {
           "Clovis Concord":{
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Grinner": {
           "Clovis Concord":{
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Guild Artisan": {
           "Clovis Concord":{
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Hermit": {
           "Clovis Concord":{
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Noble": {
           "Clovis Concord":{
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": false,
             "And": true,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": false,
             "Rival": false,
             "And": true,
             "Or": false
           }
-        }, 
+        },
         "Outlander": {
           "Clovis Concord":{
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Sage": {
           "Clovis Concord":{
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Sage (Cobalt Soul)": {
           "Clovis Concord":{
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": false,
             "And": true,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Sailor": {
           "Clovis Concord":{
             "Ally": false,
             "Rival": false,
             "And": true,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Sailor (Revelry Pirate)": {
           "Clovis Concord":{
             "Ally": false,
             "Rival": false,
             "And": true,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Soldier": {
           "Clovis Concord":{
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": false,
             "And": true,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": false,
             "Rival": false,
             "And": true,
             "Or": false
           }
-        }, 
+        },
         "Spy (Augentrust)": {
           "Clovis Concord":{
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Urchin": {
           "Clovis Concord":{
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": false,
             "Rival": true,
             "And": false,
             "Or": false
           }
-        }, 
+        },
         "Volstrucker Agent": {
           "Clovis Concord":{
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Dwendalian Empire": {
             "Ally": true,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Greying Wildlands": {
             "Ally": false,
             "Rival": false,
             "And": false,
             "Or": false
-          }, 
+          },
           "Kryn Dynasty": {
             "Ally": false,
             "Rival": true,
@@ -883,7 +959,7 @@ export default {
       }
 
       return {
-        "Allies": familyAllies, 
+        "Allies": familyAllies,
         "Rivals": familyRivals,
         "Relationships": relationships
       }
@@ -1239,5 +1315,9 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+.match-height {
+  height: 100%;
 }
 </style>
