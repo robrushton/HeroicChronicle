@@ -9,7 +9,7 @@
     >
       <v-toolbar-title>Wildemount Heroic Chronicle</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon>
+      <v-btn icon @click="changeTheme()">
         <v-icon>mdi-invert-colors</v-icon>
       </v-btn>
     </v-app-bar>
@@ -20,10 +20,10 @@
             <v-text-field v-model="newName" label="Character Name" outlined rounded clearable></v-text-field>
           </v-col>
           <v-col cols="6" lg="6">
-            <v-btn v-if="noCharGenerated" x-large color="success" elevation="8" @click="generate" transition="fade-transition" :disabled="disabledButton">
+            <v-btn v-if="noCharGenerated" x-large color="primary" elevation="8" @click="generate" transition="fade-transition" :disabled="disabledButton">
               Generate badass character
             </v-btn>
-            <v-btn v-else x-large color="success" elevation="8" @click="generate" transition="fade-transition" :disabled="disabledButton">
+            <v-btn v-else x-large color="primary" elevation="8" @click="generate" transition="fade-transition" :disabled="disabledButton">
               Generate...another...badass character
             </v-btn>
           </v-col>
@@ -168,11 +168,13 @@ export default {
       let FamilyRelationships = this.getFamilyRelationships(this.chronicle.Family);
       let BackgroundAllyRivalInfo = this.getBackgroundAllyRivalInfo(this.chronicle.SocialStatus);
       this.chronicle.AlliesRivals = this.calculateAlliesRivals(FamilyRelationships, BackgroundAllyRivalInfo);
-      // this.chronicle.FamilyAllyRivalInfo = this.getFamilyAllyRivalInfo(this.chronicle.FamilyRelationships);
       this.chronicle.FatefulMoments = this.getFatefulMoments(BackgroundAllyRivalInfo, FamilyRelationships);
       this.chronicle.FavoriteFood = this.getFavoriteFood(this.chronicle.Homeland);
       this.chronicle.Secret = this.getSecret();
       this.chronicle.Prophecy = this.getProphecy();
+    },
+    changeTheme() {
+      this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
     },
     getRandomInt(max) {
       return Math.floor(Math.random() * max) + 1;
